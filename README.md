@@ -148,7 +148,7 @@ classDiagram
     Exception <|-- InvalidMoveException
     Exception <|-- InvalidPositionException
 ```
-(O GitHub renderiza o diagrama acima automaticamente.)
+
 Exemplo de execução
 ```
 ================================
