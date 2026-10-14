@@ -1,7 +1,7 @@
 package model;
 
 /**
- * Representa um jogador: tem um nome e a peça que ele usa.
+ * Representa o jogador com nome e peça
  */
 public class Player {
 
