@@ -8,7 +8,6 @@ import java.util.List;
 
 /**
  * Controla a partida: guarda o tabuleiro, os jogadores, de quem é a vez
- * e decide quando o jogo termina (vitória ou empate).
  */
 public class Game {
 
@@ -31,7 +30,7 @@ public class Game {
         this.winner = null;
     }
 
-    /** Cria um Jogo da Velha padrão (3x3, jogadores X e O, 3 em linha). */
+    /** Cria o Jogo da Velha (3x3, jogadores X\O, 3 em linha). */
     public static Game createTicTacToe(String nameX, String nameO) {
         List<Player> players = new ArrayList<>();
         players.add(new Player(nameX, new Piece('X')));
@@ -64,8 +63,7 @@ public class Game {
     }
 
     /**
-     * Executa uma jogada. Valida se o jogo ainda está rodando, se é a vez
-     * do jogador e se a posição é válida. Depois atualiza o estado do jogo.
+     * Executa uma jogada, valida se a jogada é válida, e depois atualiza o estado
      */
     public void play(Move move) throws InvalidMoveException, InvalidPositionException {
         if (isFinished()) {
