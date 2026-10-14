@@ -1,9 +1,9 @@
 package model;
 
 /**
- * Condição de vitória por alinhamento: um jogador vence quando tem
- * "quantity" peças iguais em sequência (horizontal, vertical ou diagonal).
- */
+ * um jogador vence quando tem
+ * peças iguais em sequência (horizontal, vertical ou diagonal).**/
+
 public class WinCondition {
 
     private final int quantity;
@@ -12,7 +12,7 @@ public class WinCondition {
         this.quantity = quantity;
     }
 
-    /** Retorna true se o jogador dono da peça tiver feito um alinhamento. */
+    /** o jogador da peça tem um alinhamento = true */
     public boolean hasWon(Board board, Piece piece) {
         // direções: horizontal, vertical, diagonal \ e diagonal /
         int[][] directions = { {0, 1}, {1, 0}, {1, 1}, {1, -1} };
