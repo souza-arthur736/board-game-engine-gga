@@ -13,9 +13,7 @@ import model.Position;
 import java.util.Scanner;
 
 /**
- * Interface de terminal: mostra o tabuleiro e lê as jogadas do usuário.
- * Não contém regras do jogo, só conversa com a classe Game.
- */
+ * Interface de terminal*/
 public class ConsoleUI {
 
     private final Game game;
