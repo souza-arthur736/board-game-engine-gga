@@ -1,8 +1,8 @@
 package model;
 
 /**
- * Representa uma posição (linha e coluna) no tabuleiro.
- * Os índices começam em 0 (a conversão de 1..3 para 0..2 é feita na interface).
+ * Representa uma posição no tabuleiro
+ * conversão 0,1,2 pra 1,2,3 feita na interface
  */
 public class Position {
 
