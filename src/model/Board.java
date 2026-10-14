@@ -4,9 +4,7 @@ import exception.InvalidMoveException;
 import exception.InvalidPositionException;
 
 /**
- * Representa o tabuleiro. Guarda as peças em uma matriz.
- * A matriz é privada: ninguém de fora altera o tabuleiro diretamente,
- * só através do método placePiece(), que valida a jogada.
+ * Tabuleiro e coisas relacionadas ao tabuleiro
  */
 public class Board {
 
@@ -28,7 +26,7 @@ public class Board {
         return columns;
     }
 
-    /** Verifica se a posição está dentro dos limites do tabuleiro. */
+    /** Verifica se está dentro dos limites do tabuleiro. */
     public boolean isInsideBoard(Position position) {
         return position.getRow() >= 0 && position.getRow() < rows
                 && position.getColumn() >= 0 && position.getColumn() < columns;
@@ -42,7 +40,7 @@ public class Board {
         return grid[position.getRow()][position.getColumn()];
     }
 
-    /** Retorna a peça de uma célula pelos índices (usado pelas regras e pela tela). */
+    /** Retorna a peça de uma célula pelos índices (controle de bug). */
     public Piece getPieceAt(int row, int column) {
         if (row < 0 || row >= rows || column < 0 || column >= columns) {
             return null;
