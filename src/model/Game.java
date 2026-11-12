@@ -15,12 +15,14 @@ public class Game {
     private final Board board;
     private final List<Player> players;
     private final LineWinCondition winCondition;
+    private final MoveRule moveRule;
 
     private int currentPlayerIndex;
     private GameState state;
     private Player winner;
 
-    public Game(String name, Board board, List<Player> players, LineWinCondition winCondition, MoveRule moveRule) {
+    public Game(String name, Board board, List<Player> players, 
+        LineWinCondition winCondition, MoveRule moveRule) {
         this.name = name;
         this.board = board;
         this.players = new ArrayList<>(players); // cópia, para proteger a lista original
@@ -35,7 +37,7 @@ public class Game {
         List<Player> players = new ArrayList<>();
         players.add(new Player(nameX, new Piece('X')));
         players.add(new Player(nameO, new Piece('O')));
-        return new Game("Jogo da Velha", new Board(3, 3), players, new LineWinCondition(3));
+        return new Game("Jogo da Velha", new Board(3, 3), players, new LineWinCondition(3), new FreePositioningRule());
     }
 
     //getters, setters
@@ -59,11 +61,10 @@ public class Game {
     public GameState getState() {
         return state;
     }
-    
+
     public MoveRule getMoveRule() {
-        return moveRule;
-    }
-    
+    return moveRule;
+}
     public boolean isFinished() {
         return state != GameState.IN_PROGRESS;
     }
