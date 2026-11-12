@@ -59,7 +59,11 @@ public class Game {
     public GameState getState() {
         return state;
     }
-
+    
+    public MoveRule getMoveRule() {
+        return moveRule;
+    }
+    
     public boolean isFinished() {
         return state != GameState.IN_PROGRESS;
     }
