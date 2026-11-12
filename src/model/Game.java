@@ -14,13 +14,13 @@ public class Game {
     private final String name;
     private final Board board;
     private final List<Player> players;
-    private final WinCondition winCondition;
+    private final LineWinCondition winCondition;
 
     private int currentPlayerIndex;
     private GameState state;
     private Player winner;
 
-    public Game(String name, Board board, List<Player> players, WinCondition winCondition) {
+    public Game(String name, Board board, List<Player> players, LineWinCondition winCondition) {
         this.name = name;
         this.board = board;
         this.players = new ArrayList<>(players); // cópia, para proteger a lista original
@@ -30,13 +30,14 @@ public class Game {
         this.winner = null;
     }
 
-    /** Cria o Jogo da Velha (3x3, jogadores X\O, 3 em linha). */
     public static Game createTicTacToe(String nameX, String nameO) {
         List<Player> players = new ArrayList<>();
         players.add(new Player(nameX, new Piece('X')));
         players.add(new Player(nameO, new Piece('O')));
-        return new Game("Jogo da Velha", new Board(3, 3), players, new WinCondition(3));
+        return new Game("Jogo da Velha", new Board(3, 3), players, new LineWinCondition(3));
     }
+
+    //getters, setters
 
     public String getName() {
         return name;
@@ -65,20 +66,20 @@ public class Game {
     /**
      * Executa uma jogada, valida se a jogada é válida, e depois atualiza o estado
      */
-    public void play(Move move) throws InvalidMoveException, InvalidPositionException {
+    
+    public void play(Position position) throws InvalidMoveException, InvalidPositionException {
         if (isFinished()) {
             throw new InvalidMoveException("A partida já terminou.");
         }
-        if (move.getPlayer() != getCurrentPlayer()) {
-            throw new InvalidMoveException("Não é a vez desse jogador.");
-        }
 
-        Piece piece = move.getPlayer().getPiece();
-        board.placePiece(piece, move.getPosition()); // pode lançar exceção
+        Player player = getCurrentPlayer();
+        Piece piece = player.getPiece();
+        board.placePiece(piece, position);
 
-        if (winCondition.hasWon(board, piece)) {
+        if (winCondition.hasWon(board, piece)) 
+        {
             state = GameState.WON;
-            winner = move.getPlayer();
+            winner = player;
         } else if (board.isFull()) {
             state = GameState.DRAW;
         } else {
@@ -86,7 +87,7 @@ public class Game {
         }
     }
 
-    /** Passa a vez para o próximo jogador. */
+
     private void nextTurn() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
     }
