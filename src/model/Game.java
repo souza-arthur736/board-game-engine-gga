@@ -20,7 +20,7 @@ public class Game {
     private GameState state;
     private Player winner;
 
-    public Game(String name, Board board, List<Player> players, LineWinCondition winCondition) {
+    public Game(String name, Board board, List<Player> players, LineWinCondition winCondition, MoveRule moveRule) {
         this.name = name;
         this.board = board;
         this.players = new ArrayList<>(players); // cópia, para proteger a lista original
@@ -28,6 +28,7 @@ public class Game {
         this.currentPlayerIndex = 0;
         this.state = GameState.IN_PROGRESS;
         this.winner = null;
+        this.moveRule = moveRule;
     }
 
     public static Game createTicTacToe(String nameX, String nameO) {
