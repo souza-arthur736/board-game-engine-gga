@@ -12,8 +12,7 @@ import model.Position;
 
 import java.util.Scanner;
 
-/**
- * Interface de terminal*/
+/* Interface de terminal*/
 public class ConsoleUI {
 
     private final Game game;
@@ -96,15 +95,19 @@ public class ConsoleUI {
 
     /** Lê linha e coluna do usuário. Retorna null se não houver mais entrada. */
     private Position readPosition() {
-        Integer row = readNumber("Informe a linha: ");
-        if (row == null) {
-            return null;
+        int row = 1;
+        if (game.getMoveRule().requiresRow()) 
+        {
+            Integer r = readNumber("Informe a linha: ");
+            if(r==null){
+                return null;
+            }
+            row = r;
         }
         Integer column = readNumber("Informe a coluna: ");
         if (column == null) {
             return null;
         }
-        // o usuário digita de 1 a N, mas internamente começa em 0
         return new Position(row - 1, column - 1);
     }
 
