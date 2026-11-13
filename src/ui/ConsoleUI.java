@@ -89,7 +89,7 @@ public class ConsoleUI {
             System.out.println("Fim de jogo! " + winner.getName()
                     + " (" + winner.getPiece() + ") venceu!");
         } else {
-            System.out.println("Fim de jogo! Deu empate (velha)!");
+            System.out.println("Fim de jogo! Empate!");
         }
     }
 
