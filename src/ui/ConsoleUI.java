@@ -2,128 +2,112 @@ package ui;
 
 import exception.InvalidMoveException;
 import exception.InvalidPositionException;
-import model.Board;
-import model.Game;
-import model.GameState;
-import model.Move;
-import model.Piece;
-import model.Player;
-import model.Position;
+import model.*;
 
+import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
-/* Interface de terminal*/
 public class ConsoleUI {
-
-    private final Game game;
     private final Scanner scanner;
 
-    public ConsoleUI(Game game, Scanner scanner) {
-        this.game = game;
-        this.scanner = scanner;
+    public ConsoleUI() {
+        this.scanner = new Scanner(System.in);
     }
 
-    /** Roda a partida inteira até ela terminar. */
-    public void run() {
-        printHeader();
+    public int selectGame(List<String> gameFiles) {
+        System.out.println("================================");
+        System.out.println("          BOARD ENGINE          ");
+        System.out.println("================================");
+        System.out.println("Selecione o jogo:");
+        for (int i = 0; i < gameFiles.size(); i++) {
+            System.out.println((i + 1) + " - " + gameFiles.get(i));
+        }
 
-        while (!game.isFinished()) {
-            printBoard();
-            Player player = game.getCurrentPlayer();
-            System.out.println("\n" + player.getName() + " (" + player.getPiece() + ")");
-
-            Position position = readPosition();
-            if (position == null) { // entrada acabou (ex: Ctrl+D)
-                System.out.println("\nEntrada encerrada. Fim do programa.");
-                return;
+        while (true) {
+            System.out.print("Opção: ");
+            try {
+                int choice = scanner.nextInt();
+                if (choice >= 1 && choice <= gameFiles.size()) {
+                    return choice - 1;
+                }
+                System.out.println("Opção inválida. Escolha entre 1 e " + gameFiles.size() + ".");
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Digite apenas números.");
+                scanner.nextLine(); // limpa buffer
             }
+        }
+    }
+
+    public void start(Game game) {
+        while (game.getState() == GameState.IN_PROGRESS) {
+            printHeader(game);
+            printBoard(game.getBoard());
+
+            Player current = game.getCurrentPlayer();
+            System.out.println(current.getName() + " (" + current.getSymbol() + ")");
 
             try {
-                game.play(new Move(player, position));
+                System.out.print("Informe a linha: ");
+                int row = scanner.nextInt() - 1;
+                System.out.print("Informe a coluna: ");
+                int col = scanner.nextInt() - 1;
+
+                game.playTurn(new Position(row, col));
+            } catch (InputMismatchException e) {
+                System.out.println("\n[ERRO] Por favor, informe apenas números inteiros.\n");
+                scanner.nextLine();
             } catch (InvalidMoveException | InvalidPositionException e) {
-                System.out.println("\nJogada inválida: " + e.getMessage());
+                System.out.println("\n[JOGADA INVÁLIDA] " + e.getMessage() + "\n");
             }
         }
 
-        printBoard();
-        printResult();
+        printHeader(game);
+        printBoard(game.getBoard());
+        if (game.getState() == GameState.WIN) {
+            System.out.println("FIM DE JOGO! Vencedor: " + game.getWinner().getName() + " (" + game.getWinner().getSymbol() + ")");
+        } else {
+            System.out.println("FIM DE JOGO! A partida terminou em EMPATE.");
+        }
     }
 
-    private void printHeader() {
-        System.out.println("================================");
-        System.out.println("          BOARD ENGINE");
+    private void printHeader(Game game) {
+        System.out.println("\n================================");
+        System.out.println("          BOARD ENGINE          ");
         System.out.println("================================");
         System.out.println("Jogo: " + game.getName());
     }
 
-    private void printBoard() {
-        Board board = game.getBoard();
-        System.out.println();
+    private void printBoard(Board board) {
+        int rows = board.getRows();
+        int cols = board.getColumns();
 
-        // números das colunas
-        System.out.print("  ");
-        for (int c = 1; c <= board.getColumns(); c++) {
-            System.out.print("  " + c + " ");
+        System.out.print("    ");
+        for (int c = 1; c <= cols; c++) {
+            System.out.print(c + "   ");
         }
         System.out.println();
 
-        String separator = "  +" + "---+".repeat(board.getColumns());
-        System.out.println(separator);
+        for (int r = 0; r < rows; r++) {
+            System.out.print("  +");
+            for (int c = 0; c < cols; c++) {
+                System.out.print("---+");
+            }
+            System.out.println();
 
-        for (int r = 0; r < board.getRows(); r++) {
             System.out.print((r + 1) + " |");
-            for (int c = 0; c < board.getColumns(); c++) {
-                Piece piece = board.getPieceAt(r, c);
-                char symbol = (piece == null) ? ' ' : piece.getSymbol();
+            for (int c = 0; c < cols; c++) {
+                Piece p = board.getPieceAt(new Position(r, c));
+                char symbol = (p != null) ? p.getSymbol() : ' ';
                 System.out.print(" " + symbol + " |");
             }
             System.out.println();
-            System.out.println(separator);
         }
-    }
 
-    private void printResult() {
+        System.out.print("  +");
+        for (int c = 0; c < cols; c++) {
+            System.out.print("---+");
+        }
         System.out.println();
-        if (game.getState() == GameState.WON) {
-            Player winner = game.getWinner();
-            System.out.println("Fim de jogo! " + winner.getName()
-                    + " (" + winner.getPiece() + ") venceu!");
-        } else {
-            System.out.println("Fim de jogo! Empate!");
-        }
-    }
-
-    /** Lê linha e coluna do usuário. Retorna null se não houver mais entrada. */
-    private Position readPosition() {
-        int row = 1;
-        if (game.getMoveRule().requiresRow()) 
-        {
-            Integer r = readNumber("Informe a linha: ");
-            if(r==null){
-                return null;
-            }
-            row = r;
-        }
-        Integer column = readNumber("Informe a coluna: ");
-        if (column == null) {
-            return null;
-        }
-        return new Position(row - 1, column - 1);
-    }
-
-    /** Pede um número até o usuário digitar algo válido. */
-    private Integer readNumber(String message) {
-        while (true) {
-            System.out.print(message);
-            if (!scanner.hasNextLine()) {
-                return null;
-            }
-            String text = scanner.nextLine().trim();
-            try {
-                return Integer.parseInt(text);
-            } catch (NumberFormatException e) {
-                System.out.println("Digite um número válido.");
-            }
-        }
     }
 }
