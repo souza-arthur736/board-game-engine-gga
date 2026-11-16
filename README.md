@@ -1,196 +1,253 @@
-# Board Game Engine — Checkpoint 1: Jogo da Velha
+# Board Game Engine
 
-Projeto da disciplina **Linguagem de Programação Orientada a Objetos (2026.2)**.
+**Alunos:**
+* Arthur de Souza Bezerra
+* Gabriel de Oliveira Guedes
 
-Nesta primeira etapa implementamos **um jogo concreto** — o **Jogo da Velha** — em Java,
-executado pelo terminal, usando orientação a objetos. Nas próximas etapas vamos
-refatorar o código para transformá-lo em uma Engine que carrega jogos por arquivo de configuração.
+Motor genérico e extensível para jogos de tabuleiro em terminal desenvolvido em Java, aplicando os conceitos de Programação Orientada a Objetos (POO) para a disciplina de Linguagem de Programação Orientada a Objetos (LPOO).
 
-**Integrantes:** Arthur de Souza Bezerra e Gabriel de Oliveira Guedes
+> *Nota: A estruturação e revisão deste arquivo `README.md` foram elaboradas com o auxílio de Inteligência Artificial.*
 
-## Como executar
+---
 
-Requisito: **Java 11 ou superior** (testado com Java 21).
+## Objetivo do Projeto (Checkpoint 2)
 
-Na pasta raiz do projeto:
+Evoluir a implementação inicial para uma **Game Engine** capaz de separar o núcleo de execução das regras específicas de cada jogo. A partir de arquivos de configuração externos no formato `.json`, a aplicação instancia dinamicamente o tabuleiro, os jogadores, as regras de movimentação e as condições de vitória por meio de interfaces e polimorfismo, permitindo executar múltiplos jogos sem alterar o código-fonte da Engine.
 
+### Jogos Suportados Atualmente
+* **Jogo da Velha (`games/jogo_da_velha.json`):** Tabuleiro $3 \times 3$, posicionamento livre (`FREE_POSITIONING`) e vitória por alinhamento de 3 peças (`ALIGNMENT`).
+* **Connect Four (`games/connect_four.json`):** Tabuleiro $6 \times 7$, posicionamento com efeito de gravidade (`GRAVITY_POSITIONING`) e vitória por alinhamento de 4 peças (`ALIGNMENT`).
+
+---
+
+## Estrutura de Pacotes e Diretórios
+
+```text
+board-game-engine-gga-main/
+├── games/                                      # Arquivos de configuração dos jogos
+│   ├── connect_four.json
+│   └── jogo_da_velha.json
+└── src/
+    ├── Main.java                               # Ponto de entrada: lista os jogos e inicia a Engine
+    ├── exception/                              # Exceções personalizadas
+    │   ├── InvalidConfigurationException.java  # Erros de validação ou leitura do JSON
+    │   ├── InvalidMoveException.java           # Jogadas que violam as regras do jogo
+    │   └── InvalidPositionException.java       # Coordenadas fora dos limites do tabuleiro
+    ├── loader/                                 # Camada de interpretação de configuração
+    │   └── GameLoader.java                     # Lê o JSON e monta os objetos da partida
+    ├── model/                                  # Núcleo e regras de domínio da Engine
+    │   ├── Board.java
+    │   ├── FreePositioningRule.java
+    │   ├── Game.java
+    │   ├── GameState.java
+    │   ├── GravityPositioningRule.java
+    │   ├── LineWinCondition.java
+    │   ├── Move.java
+    │   ├── MoveRule.java
+    │   ├── Piece.java
+    │   ├── Player.java
+    │   ├── Position.java
+    │   └── WinCondition.java
+    └── ui/                                     # Interface de interação via console
+        └── ConsoleUI.java
+```
+
+---
+
+## Como Compilar e Executar
+
+Certifique-se de estar na **raiz do projeto** (no mesmo nível das pastas `src/` e `games/`) e possuir o **JDK 17+** instalado.
+
+### 1. Compilar o código-fonte
 ```bash
-# compilar (Linux/Mac)
-mkdir -p out
-javac -d out $(find src -name "*.java")
-
-# executar
-java -cp out Main
+javac -d bin src/*.java src/exception/*.java src/loader/*.java src/model/*.java src/ui/*.java
 ```
 
-No Windows (PowerShell):
-
-```powershell
-mkdir out
-javac -d out (Get-ChildItem -Recurse src -Filter *.java).FullName
-java -cp out Main
+### 2. Executar a Engine
+```bash
+java -cp bin Main
 ```
 
-Também dá para abrir a pasta no IntelliJ/VS Code/Eclipse, marcar `src` como pasta de código-fonte e rodar a classe `Main`.
+Ao iniciar, a Engine listará automaticamente os arquivos `.json` encontrados na pasta `games/` para que o usuário selecione qual jogo deseja iniciar.
 
-## Como jogar
+---
 
-1. Digite o nome dos dois jogadores (ou aperte Enter para usar o nome padrão).
-2. Na sua vez, informe a **linha** e a **coluna** (de 1 a 3) onde quer colocar sua peça.
-3. Vence quem alinhar **3 peças iguais** na horizontal, vertical ou diagonal.
-4. Se o tabuleiro encher sem vencedor, o jogo termina em **empate**.
+## Formato do Arquivo de Configuração (`.json`)
 
-Jogadas inválidas (casa ocupada, posição fora do tabuleiro, texto no lugar de número)
-mostram uma mensagem e o jogador tenta de novo, sem perder a vez.
+Novos jogos que utilizem regras já suportadas pela Engine podem ser adicionados criando um novo arquivo `.json` dentro da pasta `games/`:
 
-## Estrutura do projeto
-
-```
-src/
-├── Main.java                     -> ponto de entrada
-├── model/
-│   ├── Game.java                 -> controla a partida (turnos, estado, fim de jogo)
-│   ├── Board.java                -> tabuleiro
-│   ├── Player.java               -> jogador
-│   ├── Piece.java                -> peça (X ou O)
-│   ├── Position.java             -> linha e coluna
-│   ├── Move.java                 -> jogada (jogador + posição)
-│   ├── WinCondition.java         -> verifica a vitória por alinhamento
-│   └── GameState.java            -> enum: IN_PROGRESS, WON, DRAW
-├── exception/
-│   ├── InvalidMoveException.java
-│   └── InvalidPositionException.java
-└── ui/
-    └── ConsoleUI.java            -> desenha o tabuleiro e lê as jogadas no terminal
+```json
+{
+  "game": "Nome do Jogo",
+  "board": {
+    "rows": 3,
+    "columns": 3
+  },
+  "players": {
+    "count": 2,
+    "symbols": ["X", "O"]
+  },
+  "rules": {
+    "placement": "FREE_POSITIONING",
+    "winCondition": {
+      "type": "ALIGNMENT",
+      "quantity": 3
+    }
+  }
+}
 ```
 
-## Responsabilidade de cada classe
+* **`placement` (Regra de Posicionamento):** `FREE_POSITIONING` ou `GRAVITY_POSITIONING`.
+* **`winCondition.type` (Condição de Vitória):** `ALIGNMENT` (com `quantity` indicando a sequência necessária para vencer).
+* Configurações inválidas (dimensões $\le 0$, regras inexistentes ou arquivos mal formatados) são interceptadas pela `InvalidConfigurationException`, exibindo uma mensagem amigável no terminal.
 
-| Pergunta | Resposta |
-|---|---|
-| Qual classe representa o tabuleiro? | `Board` (matriz `Piece[][]` privada). |
-| Quem valida uma jogada? | `Board.placePiece()` valida a posição e se está vazia; `Game.play()` valida a vez do jogador e se a partida ainda está em andamento. |
-| Onde está o jogador atual? | `Game` (atributo `currentPlayerIndex` + método `getCurrentPlayer()`). |
-| Quem controla os turnos? | `Game.nextTurn()`. |
-| Quem determina que a partida terminou? | `Game.play()`, usando `WinCondition.hasWon()` e `Board.isFull()`; o resultado fica em `GameState`. |
-| Quem verifica a vitória? | `WinCondition`. |
-| Quem mostra o tabuleiro e lê o teclado? | `ConsoleUI` (nenhuma regra do jogo fica nela). |
+---
 
-## Conceitos de POO usados
-
-- **Classes e objetos:** cada elemento do jogo (tabuleiro, jogador, peça, posição, jogada) é uma classe com uma responsabilidade.
-- **Encapsulamento:** atributos `private`; o tabuleiro só é alterado por `placePiece()`, que valida a jogada. `Game` guarda uma cópia da lista de jogadores.
-- **Coleções:** `List<Player>` em `Game`.
-- **Tratamento de exceções:** `InvalidMoveException` e `InvalidPositionException`, tratadas na `ConsoleUI` (o programa não quebra com stack trace).
-- **Enum:** `GameState` para representar o estado da partida.
-
-> Herança, interfaces e polimorfismo ainda não foram necessários com apenas um jogo.
-> Eles entram no Checkpoint 2, quando generalizarmos regras como `WinCondition`.
-
-## Diagrama de classes
+## Diagrama de Classes (UML)
 
 ```mermaid
 classDiagram
     class Main {
-        +main(String[] args)$
+        +main(String[] args) void
     }
+
+    class GameLoader {
+        +loadFromFile(Path filePath) Game
+        -createMoveRule(String placementType) MoveRule
+        -createWinCondition(String winType, int quantity, int rows, int cols) WinCondition
+    }
+
     class ConsoleUI {
-        -Game game
         -Scanner scanner
-        +run()
-        -printBoard()
-        -printResult()
-        -readPosition() Position
+        +selectGame(List~String~ gameFiles) int
+        +start(Game game) void
+        -printHeader(Game game) void
+        -printBoard(Board board) void
     }
+
     class Game {
         -String name
         -Board board
         -List~Player~ players
+        -MoveRule moveRule
         -WinCondition winCondition
         -int currentPlayerIndex
         -GameState state
         -Player winner
-        +createTicTacToe(String, String)$ Game
-        +play(Move)
+        +playTurn(Position targetPosition) void
+        +getName() String
+        +getBoard() Board
         +getCurrentPlayer() Player
-        +isFinished() boolean
-        -nextTurn()
+        +getState() GameState
+        +getWinner() Player
     }
+
     class Board {
         -int rows
         -int columns
         -Piece[][] grid
-        +placePiece(Piece, Position)
-        +getPieceAt(Position) Piece
-        +isInsideBoard(Position) boolean
-        +isEmpty(Position) boolean
+        +placePiece(Piece piece, Position pos) void
+        +getPieceAt(Position pos) Piece
+        +isEmpty(Position pos) boolean
+        +isValidPosition(Position pos) boolean
         +isFull() boolean
     }
+
     class Player {
         -String name
-        -Piece piece
+        -char symbol
+        +getName() String
+        +getSymbol() char
     }
+
     class Piece {
         -char symbol
+        -Player owner
+        +getSymbol() char
+        +getOwner() Player
     }
+
     class Position {
         -int row
         -int column
+        +getRow() int
+        +getColumn() int
     }
+
     class Move {
         -Player player
-        -Position position
+        -Position targetPosition
+        +getPlayer() Player
+        +getTargetPosition() Position
     }
-    class WinCondition {
-        -int quantity
-        +hasWon(Board, Piece) boolean
-    }
+
     class GameState {
         <<enumeration>>
         IN_PROGRESS
-        WON
+        WIN
         DRAW
     }
-    class InvalidMoveException
-    class InvalidPositionException
 
-    Main ..> Game : cria
-    Main ..> ConsoleUI : cria
-    ConsoleUI --> Game
-    Game *-- Board
-    Game o-- Player
-    Game --> WinCondition
-    Game --> GameState
-    Player --> Piece
-    Board o-- Piece
-    Move --> Player
-    Move --> Position
-    WinCondition ..> Board
-    Board ..> InvalidMoveException : lança
+    class MoveRule {
+        <<interface>>
+        +isValidMove(Board board, Move move) boolean
+        +applyMove(Board board, Move move) Position
+    }
+
+    class FreePositioningRule {
+        +isValidMove(Board board, Move move) boolean
+        +applyMove(Board board, Move move) Position
+    }
+
+    class GravityPositioningRule {
+        +isValidMove(Board board, Move move) boolean
+        +applyMove(Board board, Move move) Position
+    }
+
+    class WinCondition {
+        <<interface>>
+        +checkWin(Board board, Position lastMove, Player player) boolean
+    }
+
+    class LineWinCondition {
+        -int winLength
+        +checkWin(Board board, Position lastMove, Player player) boolean
+    }
+
+    class InvalidConfigurationException {
+        <<exception>>
+    }
+
+    class InvalidMoveException {
+        <<exception>>
+    }
+
+    class InvalidPositionException {
+        <<exception>>
+    }
+
+    Main ..> GameLoader : usa
+    Main ..> ConsoleUI : usa
+    Main ..> InvalidConfigurationException : trata
+    GameLoader ..> Game : instancia
+    GameLoader ..> Board : instancia
+    GameLoader ..> Player : instancia
+    GameLoader ..> MoveRule : instancia
+    GameLoader ..> WinCondition : instancia
+    GameLoader ..> InvalidConfigurationException : lança
+    ConsoleUI ..> Game : interage
+    Game *-- Board : possui
+    Game o-- Player : gerencia
+    Game --> MoveRule : delega validação/movimento
+    Game --> WinCondition : verifica vitória
+    Game --> GameState : estado atual
+    Board o-- Piece : armazena
+    Piece --> Player : pertence a
+    Move --> Player : realizado por
+    Move --> Position : destino
+    MoveRule <|.. FreePositioningRule : implementa
+    MoveRule <|.. GravityPositioningRule : implementa
+    WinCondition <|.. LineWinCondition : implementa
+    Game ..> InvalidMoveException : lança
     Board ..> InvalidPositionException : lança
-    Exception <|-- InvalidMoveException
-    Exception <|-- InvalidPositionException
-```
-
-
-## Exemplo de execução
-
-```
-================================
-          BOARD ENGINE
-================================
-Jogo: Jogo da Velha
-
-    1   2   3
-  +---+---+---+
-1 | X |   | O |
-  +---+---+---+
-2 |   | X |   |
-  +---+---+---+
-3 | O |   |   |
-  +---+---+---+
-
-Ana (X)
-Informe a linha: 3
-Informe a coluna: 3
 ```
