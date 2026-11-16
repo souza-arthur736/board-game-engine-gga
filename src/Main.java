@@ -1,27 +1,57 @@
+import exception.InvalidConfigurationException;
+import loader.GameLoader;
 import model.Game;
 import ui.ConsoleUI;
 
-import java.util.Scanner;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-/**
- * Ponto de entrada do programa. Só cria o jogo e inicia a interface.
- */
 public class Main {
-
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        Path gamesDir = Paths.get("games");
 
-        System.out.print("Nome do Jogador 1 (X): ");
-        String name1 = scanner.hasNextLine() ? scanner.nextLine().trim() : "";
-        System.out.print("Nome do Jogador 2 (O): ");
-        String name2 = scanner.hasNextLine() ? scanner.nextLine().trim() : "";
+        if (!Files.exists(gamesDir) || !Files.isDirectory(gamesDir)) {
+            System.out.println("Erro ao iniciar a Engine: diretório 'games/' não encontrado.");
+            return;
+        }
 
-        if (name1.isEmpty()) name1 = "Jogador 1";
-        if (name2.isEmpty()) name2 = "Jogador 2";
+        List<Path> jsonFiles;
+        try (Stream<Path> paths = Files.list(gamesDir)) {
+            jsonFiles = paths
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.toString().endsWith(".json"))
+                    .sorted()
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            System.out.println("Erro ao listar os arquivos de configuração na pasta 'games/'.");
+            return;
+        }
 
-        Game game = Game.createTicTacToe(name1, name2);
-        new ConsoleUI(game, scanner).run();
+        if (jsonFiles.isEmpty()) {
+            System.out.println("Nenhum arquivo de configuração (.json) encontrado na pasta 'games/'.");
+            return;
+        }
 
-        scanner.close();
+        ConsoleUI ui = new ConsoleUI();
+        List<String> fileNames = jsonFiles.stream()
+                .map(p -> p.getFileName().toString())
+                .collect(Collectors.toList());
+
+        int selectedIndex = ui.selectGame(fileNames);
+        Path selectedFile = jsonFiles.get(selectedIndex);
+
+        GameLoader loader = new GameLoader();
+        try {
+            Game game = loader.loadFromFile(selectedFile);
+            ui.start(game);
+        } catch (InvalidConfigurationException e) {
+            System.out.println("\nErro ao carregar o jogo:");
+            System.out.println(e.getMessage());
+        }
     }
 }
