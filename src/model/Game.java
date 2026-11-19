@@ -2,9 +2,11 @@ package model;
 
 import exception.InvalidMoveException;
 import exception.InvalidPositionException;
+import java.util.ArrayList;
 import java.util.List;
 
-public class Game {
+public class Game 
+{
     private final String name;
     private final Board board;
     private final List<Player> players;
@@ -14,10 +16,11 @@ public class Game {
     private GameState state;
     private Player winner;
 
-    public Game(String name, Board board, List<Player> players, MoveRule moveRule, WinCondition winCondition) {
+    public Game(String name, Board board, List<Player> players, MoveRule moveRule, WinCondition winCondition) 
+    {
         this.name = name;
         this.board = board;
-        this.players = players;
+        this.players = new ArrayList<>(players);
         this.moveRule = moveRule;
         this.winCondition = winCondition;
         this.currentPlayerIndex = 0;
@@ -25,22 +28,19 @@ public class Game {
         this.winner = null;
     }
 
-    public void playTurn(Position targetPosition) throws InvalidMoveException, InvalidPositionException {
+    public void playTurn(Position targetPosition) throws InvalidMoveException, InvalidPositionException 
+        {
         if (state != GameState.IN_PROGRESS) {
             throw new InvalidMoveException("A partida já foi encerrada.");
         }
 
         Player currentPlayer = getCurrentPlayer();
-        Move move = new Move(currentPlayer, targetPosition);
+        Piece piece = currentPlayer.getPiece();
 
-        if (!moveRule.isValidMove(board, move)) {
-            throw new InvalidMoveException("Jogada inválida para as regras deste jogo!");
-        }
+        moveRule.place(board, piece, targetPosition);
 
-        Position finalPosition = moveRule.applyMove(board, move);
-
-        if (winCondition.checkWin(board, finalPosition, currentPlayer)) {
-            this.state = GameState.WIN;
+        if (winCondition.hasWon(board, piece)) {
+            this.state = GameState.WON;
             this.winner = currentPlayer;
         } else if (board.isFull()) {
             this.state = GameState.DRAW;
@@ -55,6 +55,10 @@ public class Game {
 
     public String getName() {
         return name;
+    }
+
+    public MoveRule getMoveRule() {
+        return moveRule;
     }
 
     public Board getBoard() {
@@ -73,3 +77,4 @@ public class Game {
         return winner;
     }
 }
+
