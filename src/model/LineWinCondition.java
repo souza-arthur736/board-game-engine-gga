@@ -1,18 +1,12 @@
 package model;
 
-/**
- * um jogador vence quando tem
- * peças iguais em sequência (horizontal, vertical ou diagonal).**/
-
-public class LineWinCondition {
-
+public class LineWinCondition implements WinCondition {
     private final int quantity;
 
     public LineWinCondition(int quantity) {
         this.quantity = quantity;
     }
-
-    /** o jogador da peça tem um alinhamento = true */
+    @Override
     public boolean hasWon(Board board, Piece piece) {
         // direções: horizontal, vertical, diagonal \ e diagonal /
         int[][] directions = { {0, 1}, {1, 0}, {1, 1}, {1, -1} };
@@ -29,7 +23,6 @@ public class LineWinCondition {
         return false;
     }
 
-    /** Conta quantas peças iguais existem seguidas a partir de (row, col) em uma direção. */
     private int countSequence(Board board, Piece piece, int row, int col, int dRow, int dCol) {
         int count = 0;
         while (board.getPieceAt(row, col) == piece) {
