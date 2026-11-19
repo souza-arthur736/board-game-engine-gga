@@ -33,8 +33,8 @@ public class ConsoleUI {
                 }
                 System.out.println("Opção inválida. Escolha entre 1 e " + gameFiles.size() + ".");
             } catch (InputMismatchException e) {
-                System.out.println("Entrada inválida. Digite apenas números.");
-                scanner.nextLine(); // limpa buffer
+                System.out.println("Entrada invalida. Digite apenas numeros.");
+                scanner.nextLine();
             }
         }
     }
@@ -45,27 +45,30 @@ public class ConsoleUI {
             printBoard(game.getBoard());
 
             Player current = game.getCurrentPlayer();
-            System.out.println(current.getName() + " (" + current.getSymbol() + ")");
+            System.out.println(current.getName() + " (" + current.getPiece().getSymbol() + ")");
 
             try {
-                System.out.print("Informe a linha: ");
-                int row = scanner.nextInt() - 1;
+                int row = 0;
+                if (game.getMoveRule().requiresRow()) {
+                    System.out.print("Informe a linha: ");
+                    row = scanner.nextInt() - 1;
+                }
                 System.out.print("Informe a coluna: ");
                 int col = scanner.nextInt() - 1;
 
                 game.playTurn(new Position(row, col));
             } catch (InputMismatchException e) {
-                System.out.println("\n[ERRO] Por favor, informe apenas números inteiros.\n");
+                System.out.println("\n[ERRO] Por favor, informe apenas numeros inteiros.\n");
                 scanner.nextLine();
             } catch (InvalidMoveException | InvalidPositionException e) {
-                System.out.println("\n[JOGADA INVÁLIDA] " + e.getMessage() + "\n");
+                System.out.println("\n[JOGADA INVALIDA] " + e.getMessage() + "\n");
             }
         }
 
         printHeader(game);
         printBoard(game.getBoard());
-        if (game.getState() == GameState.WIN) {
-            System.out.println("FIM DE JOGO! Vencedor: " + game.getWinner().getName() + " (" + game.getWinner().getSymbol() + ")");
+        if (game.getState() == GameState.WON) {
+            System.out.println("FIM DE JOGO! Vencedor: " + game.getWinner().getName() + " (" + game.getWinner().getPiece().getSymbol() + ")");
         } else {
             System.out.println("FIM DE JOGO! A partida terminou em EMPATE.");
         }
@@ -97,7 +100,7 @@ public class ConsoleUI {
 
             System.out.print((r + 1) + " |");
             for (int c = 0; c < cols; c++) {
-                Piece p = board.getPieceAt(new Position(r, c));
+                Piece p = board.getPieceAt(r, c);
                 char symbol = (p != null) ? p.getSymbol() : ' ';
                 System.out.print(" " + symbol + " |");
             }
