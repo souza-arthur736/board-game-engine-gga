@@ -42,7 +42,6 @@ board-game-engine-gga-main/
     │   ├── GameState.java
     │   ├── GravityPositioningRule.java
     │   ├── LineWinCondition.java
-    │   ├── Move.java
     │   ├── MoveRule.java
     │   ├── Piece.java
     │   ├── Player.java
@@ -138,6 +137,7 @@ classDiagram
         +getName() String
         +getBoard() Board
         +getCurrentPlayer() Player
+        +getMoveRule() MoveRule
         +getState() GameState
         +getWinner() Player
     }
@@ -148,23 +148,22 @@ classDiagram
         -Piece[][] grid
         +placePiece(Piece piece, Position pos) void
         +getPieceAt(Position pos) Piece
+        +getPieceAt(int row, int col) Piece
         +isEmpty(Position pos) boolean
-        +isValidPosition(Position pos) boolean
+        +isInsideBoard(Position pos) boolean
         +isFull() boolean
     }
 
     class Player {
         -String name
-        -char symbol
+        -Piece piece
         +getName() String
-        +getSymbol() char
+        +getPiece() Piece
     }
 
     class Piece {
         -char symbol
-        -Player owner
         +getSymbol() char
-        +getOwner() Player
     }
 
     class Position {
@@ -174,44 +173,37 @@ classDiagram
         +getColumn() int
     }
 
-    class Move {
-        -Player player
-        -Position targetPosition
-        +getPlayer() Player
-        +getTargetPosition() Position
-    }
-
     class GameState {
         <<enumeration>>
         IN_PROGRESS
-        WIN
+        WON
         DRAW
     }
 
     class MoveRule {
         <<interface>>
-        +isValidMove(Board board, Move move) boolean
-        +applyMove(Board board, Move move) Position
+        +place(Board board, Piece piece, Position requested) void
+        +requiresRow() boolean
     }
 
     class FreePositioningRule {
-        +isValidMove(Board board, Move move) boolean
-        +applyMove(Board board, Move move) Position
+        +place(Board board, Piece piece, Position requested) void
+        +requiresRow() boolean
     }
 
     class GravityPositioningRule {
-        +isValidMove(Board board, Move move) boolean
-        +applyMove(Board board, Move move) Position
+        +place(Board board, Piece piece, Position requested) void
+        +requiresRow() boolean
     }
 
     class WinCondition {
         <<interface>>
-        +checkWin(Board board, Position lastMove, Player player) boolean
+        +hasWon(Board board, Piece piece) boolean
     }
 
     class LineWinCondition {
-        -int winLength
-        +checkWin(Board board, Position lastMove, Player player) boolean
+        -int quantity
+        +hasWon(Board board, Piece piece) boolean
     }
 
     class InvalidConfigurationException {
@@ -238,13 +230,11 @@ classDiagram
     ConsoleUI ..> Game : interage
     Game *-- Board : possui
     Game o-- Player : gerencia
-    Game --> MoveRule : delega validação/movimento
+    Game --> MoveRule : delega o posicionamento
     Game --> WinCondition : verifica vitória
     Game --> GameState : estado atual
     Board o-- Piece : armazena
-    Piece --> Player : pertence a
-    Move --> Player : realizado por
-    Move --> Position : destino
+    Player --> Piece : usa
     MoveRule <|.. FreePositioningRule : implementa
     MoveRule <|.. GravityPositioningRule : implementa
     WinCondition <|.. LineWinCondition : implementa
