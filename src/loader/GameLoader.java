@@ -21,13 +21,13 @@ public class GameLoader {
             throw new InvalidConfigurationException("Não foi possível ler o arquivo de configuração: " + filePath.getFileName());
         }
 
-        // 1. Extração e validação do nome do jogo
+        
         String gameName = extractString(content, "\"game\"\\s*:\\s*\"([^\"]+)\"");
         if (gameName == null || gameName.isBlank()) {
             throw new InvalidConfigurationException("O nome do jogo ('game') não foi definido no arquivo.");
         }
 
-        // 2. Extração e validação do tabuleiro
+        
         int rows = extractInt(content, "\"rows\"\\s*:\\s*(-?\\d+)");
         int columns = extractInt(content, "\"columns\"\\s*:\\s*(-?\\d+)");
         if (rows <= 0 || columns <= 0) {
@@ -35,7 +35,7 @@ public class GameLoader {
         }
         Board board = new Board(rows, columns);
 
-        // 3. Extração e validação dos jogadores
+        
         int playerCount = extractInt(content, "\"count\"\\s*:\\s*(-?\\d+)");
         List<String> symbols = extractStringArray(content, "\"symbols\"\\s*:\\s*\\[([^\\]]+)\\]");
         if (playerCount < 2 || symbols.size() < playerCount) {
@@ -48,14 +48,14 @@ public class GameLoader {
             if (sym.isEmpty()) {
                 throw new InvalidConfigurationException("Símbolo vazio encontrado para o Jogador " + (i + 1) + ".");
             }
-            players.add(new Player("Jogador " + (i + 1), sym.charAt(0)));
+            players.add(new Player("Jogador " + (i + 1), new Piece(sym.charAt(0))));
         }
 
-        // 4. Instanciação polimórfica da regra de movimentação
+        
         String placementType = extractString(content, "\"placement\"\\s*:\\s*\"([^\"]+)\"");
         MoveRule moveRule = createMoveRule(placementType);
 
-        // 5. Instanciação polimórfica da condição de vitória
+        
         String winType = extractString(content, "\"type\"\\s*:\\s*\"([^\"]+)\"");
         int winQuantity = extractInt(content, "\"quantity\"\\s*:\\s*(-?\\d+)");
         WinCondition winCondition = createWinCondition(winType, winQuantity, rows, columns);
@@ -86,8 +86,6 @@ public class GameLoader {
             default -> throw new InvalidConfigurationException("Regra de vitória '" + winType + "' não reconhecida pela Engine.");
         };
     }
-
-    // --- Métodos auxiliares de parsing JSON ---
 
     private String extractString(String json, String regex) {
         Matcher matcher = Pattern.compile(regex).matcher(json);
